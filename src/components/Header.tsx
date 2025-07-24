@@ -15,12 +15,20 @@ interface HeaderProps {
   onPinClick: () => void;
   onQrClick: () => void;
   onSave: () => void;
+  isPinConfigured?: boolean;
+  pinCode?: string;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onPinClick, onQrClick, onSave }) => {
+export const Header: React.FC<HeaderProps> = ({ 
+  onPinClick, 
+  onQrClick, 
+  onSave, 
+  isPinConfigured = false,
+  pinCode = ""
+}) => {
   return (
-    <Card sx={{ 
-      mr: 0, 
+    <Card sx={{
+      mr: 0,
       backgroundColor: '#f5f5f5',
       boxShadow: 'none',
       border: 'none',
@@ -54,7 +62,7 @@ export const Header: React.FC<HeaderProps> = ({ onPinClick, onQrClick, onSave })
                     top: 0,
                     bottom: 0,
                     width: '7px',
-                    backgroundColor: '#450e4fff',
+                    backgroundColor: isPinConfigured ? '#4CAF50' : '#450e4fff',
                     zIndex: 1,
                   },
                   '&:hover': {
@@ -63,7 +71,7 @@ export const Header: React.FC<HeaderProps> = ({ onPinClick, onQrClick, onSave })
                   }
                 }}
               >
-                Mon Code PIN
+                {isPinConfigured ? `PIN: ${pinCode}` : 'Mon Code PIN'}
               </Button>
               <Button
                 variant="contained"
@@ -85,10 +93,10 @@ export const Header: React.FC<HeaderProps> = ({ onPinClick, onQrClick, onSave })
               <Button
                 variant="contained"
                 onClick={onSave}
-                sx={{ 
+                sx={{
                   bgcolor: '#1a55d4ff',
                   borderRadius: '4px',
-                  '&:hover': { bgcolor: '#3367d6' } 
+                  '&:hover': { bgcolor: '#3367d6' }
                 }}
               >
                 SAUVEGARDER
@@ -110,11 +118,10 @@ export const Header: React.FC<HeaderProps> = ({ onPinClick, onQrClick, onSave })
               </Button>
             </Box>
           </Box>
-          
           {/* Date déplacée en bas à droite */}
           <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-            <Typography 
-              variant="body2" 
+            <Typography
+              variant="body2"
               color="text.secondary"
               sx={{
                 borderRight: '8px solid #1a55d4ff',

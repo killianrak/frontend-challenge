@@ -92,6 +92,8 @@ function App() {
   const [minPurchase, setMinPurchase] = useState(false);
   const [minPurchaseAmount, setMinPurchaseAmount] = useState("");
   const [winRate, setWinRate] = useState(false);
+  const [pinCode, setPinCode] = useState<string>("");
+  const [isPinConfigured, setIsPinConfigured] = useState<boolean>(false);
 
   // Configuration du formulaire
   const { control, handleSubmit, watch, setValue, getValues } = useForm<Campaign>({
@@ -197,7 +199,20 @@ function App() {
     setOpenModal(null);
   };
 
-  const isPinConfigured = false; // Mock PIN status
+  const handlePinConfigured = (pin: string) => {
+    console.log('PIN configuré:', pin); // Debug
+    setPinCode(pin);
+    setIsPinConfigured(true);
+    setOpenModal(null);
+  };
+
+  const handlePinClick = () => {
+    if (!isPinConfigured) {
+      // Si pas de PIN, ouvrir la modal de configuration
+      setOpenModal('configure-pin');
+    }
+    // Si le PIN est configuré, on ne fait rien (le PIN est déjà affiché dans le bouton)
+  };
 
 return (
     <ThemeProvider theme={theme}>
@@ -218,9 +233,11 @@ return (
           <Box sx={{ maxWidth: 1200, mx: 'auto' }}>
             {/* En-tête */}
             <Header
-              onPinClick={() => handleOpenModal('pin')}
+              onPinClick={handlePinClick}
               onQrClick={() => handleOpenModal('qr')}
               onSave={handleSubmit(onSubmit)}
+              isPinConfigured={isPinConfigured}
+              pinCode={pinCode}
             />
 
             <Box sx={{ p: 3 }}>
@@ -229,7 +246,7 @@ return (
                 {/* Section des alertes */}
                 <AlertsSection
                   isPinConfigured={isPinConfigured}
-                  onConfigurePin={() => handleOpenModal('configure-pin')}
+                  onConfigurePin={() => setOpenModal('configure-pin')}
                 />
 
                 {/* Section des actions */}
@@ -269,9 +286,11 @@ return (
               <Modals
                 openModal={openModal}
                 onCloseModal={handleCloseModal}
+                onPinConfigured={handlePinConfigured}
                 watchedGameType={watchedGameType}
                 primaryColor={watchedPrimaryColor}
                 secondaryColor={watchedSecondaryColor}
+        
               />
             </Box>
           </Box>

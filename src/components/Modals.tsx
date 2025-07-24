@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -11,7 +11,8 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Box
+  Box,
+  Alert
 } from '@mui/material';
 import type { GameType } from '../types/types';
 import { GAME_TYPES } from '../constants/constants';
@@ -19,6 +20,7 @@ import { GAME_TYPES } from '../constants/constants';
 interface ModalsProps {
   openModal: string | null;
   onCloseModal: () => void;
+  onPinConfigured: (pin: string) => void;
   watchedGameType: GameType;
   primaryColor: string;
   secondaryColor: string;
@@ -27,10 +29,15 @@ interface ModalsProps {
 export const Modals: React.FC<ModalsProps> = ({
   openModal,
   onCloseModal,
+  onPinConfigured,
   watchedGameType,
   primaryColor,
   secondaryColor
 }) => {
+  const [pin, setPin] = useState('');
+  const [confirmPin, setConfirmPin] = useState('');
+  const [pinError, setPinError] = useState('');
+
   const getCurrentGameIcon = () => {
     const gameType = GAME_TYPES.find(g => g.value === watchedGameType);
     return gameType?.icon || "🎮";
@@ -39,6 +46,40 @@ export const Modals: React.FC<ModalsProps> = ({
   const getCurrentGameLabel = () => {
     const gameType = GAME_TYPES.find(g => g.value === watchedGameType);
     return gameType?.label || "Jeu";
+  };
+
+  const handlePinSubmit = () => {
+    // Validation du PIN
+    if (pin.length !== 4) {
+      setPinError('Le code PIN doit contenir 4 chiffres');
+      return;
+    }
+
+    if (!/^\d{4}$/.test(pin)) {
+      setPinError('Le code PIN doit contenir uniquement des chiffres');
+      return;
+    }
+
+    if (pin !== confirmPin) {
+      setPinError('Les codes PIN ne correspondent pas');
+      return;
+    }
+
+    // PIN valide, on le sauvegarde
+    onPinConfigured(pin);
+    
+    // Reset des champs
+    setPin('');
+    setConfirmPin('');
+    setPinError('');
+  };
+
+  const handleClosePinModal = () => {
+    // Reset des champs quand on ferme
+    setPin('');
+    setConfirmPin('');
+    setPinError('');
+    onCloseModal();
   };
 
   return (
@@ -66,29 +107,62 @@ export const Modals: React.FC<ModalsProps> = ({
       </Dialog>
 
       {/* Configure PIN Modal */}
-      <Dialog open={openModal === 'configure-pin'} onClose={onCloseModal}>
+      <Dialog open={openModal === 'configure-pin'} onClose={handleClosePinModal}>
         <DialogTitle>Configurer mon Code PIN</DialogTitle>
         <DialogContent>
           <Typography sx={{ mb: 2 }}>
             Définissez un code PIN pour sécuriser la récupération des cadeaux.
           </Typography>
+          
+          {pinError && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {pinError}
+            </Alert>
+          )}
+
           <TextField
             fullWidth
             label="Code PIN (4 chiffres)"
-            type="password"
-            inputProps={{ maxLength: 4, pattern: "[0-9]*" }}
+            type="number"
+            value={pin}
+            onChange={(e) => {
+              const value = e.target.value.slice(0, 4); // Limite à 4 caractères
+              setPin(value);
+              setPinError(''); // Reset l'erreur quand on tape
+            }}
+            inputProps={{ 
+              maxLength: 4,
+              pattern: "[0-9]*",
+              inputMode: "numeric"
+            }}
             sx={{ mb: 2 }}
+            error={!!pinError}
           />
           <TextField
             fullWidth
             label="Confirmer le Code PIN"
-            type="password"
-            inputProps={{ maxLength: 4, pattern: "[0-9]*" }}
+            type="number"
+            value={confirmPin}
+            onChange={(e) => {
+              const value = e.target.value.slice(0, 4); // Limite à 4 caractères
+              setConfirmPin(value);
+              setPinError(''); // Reset l'erreur quand on tape
+            }}
+            inputProps={{ 
+              maxLength: 4,
+              pattern: "[0-9]*",
+              inputMode: "numeric"
+            }}
+            error={!!pinError}
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={onCloseModal}>Annuler</Button>
-          <Button variant="contained" onClick={onCloseModal}>
+          <Button onClick={handleClosePinModal}>Annuler</Button>
+          <Button 
+            variant="contained" 
+            onClick={handlePinSubmit}
+            disabled={!pin || !confirmPin}
+          >
             Configurer
           </Button>
         </DialogActions>

@@ -19,14 +19,15 @@ export const AlertsSection: React.FC<AlertsSectionProps> = ({
   onConfigurePin
 }) => {
   return (
-    <Card sx={{ 
+
+  !isPinConfigured &&  <Card sx={{ 
       mb: 3, 
       borderRadius: 3,
       backgroundColor: '#FFF3C4',
       border: '1px solid #F59E0B'
     }}>
       <CardContent sx={{ p: 4 }}> 
-        {!isPinConfigured && (
+        
           <Box sx={{ 
             display: 'flex', 
             alignItems: 'center', 
@@ -91,8 +92,9 @@ export const AlertsSection: React.FC<AlertsSectionProps> = ({
               CONFIGURER MON CODE
             </Button>
           </Box>
-        )}
+      
       </CardContent>
     </Card>
+    
   );
 };
