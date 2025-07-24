@@ -19,7 +19,8 @@ import {
 } from '@mui/material';
 import {
   ExpandMore as ExpandMoreIcon,
-  Edit as EditIcon
+  Edit as EditIcon,
+  Add as AddIcon
 } from '@mui/icons-material';
 import { Controller, useFieldArray, useWatch } from 'react-hook-form';
 import type { Control } from 'react-hook-form';
@@ -67,19 +68,15 @@ export const ConditionsSection: React.FC<ConditionsSectionProps> = ({
   useEffect(() => {
     if (!watchedGifts) return;
 
-    const currentConditions = [...conditionFields];
     const newConditions: any[] = [];
 
     // Créer une condition pour chaque gift
     watchedGifts.forEach(gift => {
-      const existingCondition = currentConditions.find(condition => condition.name === gift.name);
+      const existingCondition = conditionFields.find(condition => condition.name === gift.name);
       
       let conditionValue = "Aucune";
-      if (allConditions && minPurchase) {
-        conditionValue = `Achat minimum de ${minPurchaseAmount || 0}€`;
-      } else if (allConditions) {
-        conditionValue = "Pour tous les gains";
-      } else if (minPurchase) {
+      if (minPurchase) {
+        // Si l'achat minimal est activé, c'est pour tous les gains
         conditionValue = `Achat minimum de ${minPurchaseAmount || 0}€`;
       }
 
@@ -103,7 +100,7 @@ export const ConditionsSection: React.FC<ConditionsSectionProps> = ({
     if (conditionsChanged) {
       replaceConditions(newConditions);
     }
-  }, [watchedGifts, allConditions, minPurchase, minPurchaseAmount, conditionFields, replaceConditions]);
+  }, [watchedGifts, minPurchase, minPurchaseAmount, conditionFields, replaceConditions]);
 
   return (
     <Accordion expanded={expanded} onChange={handleAccordionChange}>
@@ -128,115 +125,126 @@ export const ConditionsSection: React.FC<ConditionsSectionProps> = ({
       </AccordionSummary>
 
       <AccordionDetails sx={{ p: 3, border: '1px solid #e5e7eb', borderRadius: 2, mt: 1 }}>
-        {/* Section des switches de configuration */}
-        <Box sx={{ mb: 3 }}>
+        {/* Section des conditions */}
+        <Box sx={{ mb: 4 }}>
+          {/* Pas de condition */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Box
                 sx={{
                   width: 4,
                   height: 24,
-                  bgcolor: '#FF9800',
+                  bgcolor: '#d1d5db',
                   borderRadius: 1
                 }}
               />
-              <Typography variant="body2" sx={{ fontWeight: 600, color: '#000' }}>
-                Pour tous les gains
-              </Typography>
+              <Box>
+                <Typography variant="body2" sx={{ fontWeight: 600, color: '#000', mb: 0.5 }}>
+                  Pas de condition
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '12px' }}>
+                  Les clients peuvent récupérer leur gain sans aucun achat.
+                </Typography>
+              </Box>
               <Switch
-                checked={allConditions}
-                onChange={(e) => onAllConditionsChange(e.target.checked)}
+                checked={!minPurchase}
+                onChange={(e) => onMinPurchaseChange(!e.target.checked)}
                 sx={{
+                  ml: 2,
                   '& .MuiSwitch-switchBase.Mui-checked': {
-                    color: '#FF9800',
+                    color: '#d1d5db',
                   },
                   '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                    backgroundColor: '#FF9800',
+                    backgroundColor: '#d1d5db',
                   },
                 }}
               />
             </Box>
           </Box>
-          
-          <Typography variant="caption" display="block" color="text.secondary" sx={{ mb: 2, ml: 3 }}>
-            Appliquer les mêmes conditions à tous les gains
-          </Typography>
 
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          {/* Sous condition d'achat minimale */}
+          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
               <Box
                 sx={{
                   width: 4,
                   height: 24,
-                  bgcolor: '#4CAF50',
-                  borderRadius: 1
+                  bgcolor: '#ff9800',
+                  borderRadius: 1,
+                  mt: 0.5
                 }}
               />
-              <Typography variant="body2" sx={{ fontWeight: 600, color: '#000' }}>
-                Sous condition d'achat minimal
-              </Typography>
+              <Box>
+                <Typography variant="body2" sx={{ fontWeight: 600, color: '#000', mb: 0.5 }}>
+                  Sous condition d'achat minimale
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '12px', mb: 2 }}>
+                  Exigez un montant minimum d'achat en boutique pour permettre la récupération du gain.
+                </Typography>
+                
+                {minPurchase && (
+                  <Box sx={{ mt: 2 }}>
+                    <Typography variant="body2" sx={{ mb: 1, color: '#666', fontWeight: 500 }}>
+                      Montant à atteindre
+                    </Typography>
+                    <TextField
+                      size="small"
+                      placeholder="Ex : 10€ d'achat minimum pour récupérer le gain"
+                      type="number"
+                      value={minPurchaseAmount}
+                      onChange={(e) => onMinPurchaseAmountChange(e.target.value)}
+                      InputProps={{
+                        endAdornment: <Typography variant="body2" sx={{ color: '#666' }}>€</Typography>
+                      }}
+                      sx={{ 
+                        width: '100%',
+                        maxWidth: 400,
+                        '& .MuiOutlinedInput-root': {
+                          borderRadius: 1,
+                          fontSize: '14px',
+                          '& input': {
+                            padding: '8px 12px'
+                          }
+                        }
+                      }}
+                    />
+                  </Box>
+                )}
+              </Box>
               <Switch
                 checked={minPurchase}
                 onChange={(e) => onMinPurchaseChange(e.target.checked)}
                 sx={{
+                  ml: 2,
+                  mt: 0.5,
                   '& .MuiSwitch-switchBase.Mui-checked': {
-                    color: '#4CAF50',
+                    color: '#ff9800',
                   },
                   '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                    backgroundColor: '#4CAF50',
+                    backgroundColor: '#ff9800',
                   },
                 }}
               />
             </Box>
           </Box>
-          
-          {minPurchase && (
-            <Box sx={{ ml: 3, mt: 2 }}>
-              <TextField
-                size="small"
-                label="Montant minimum"
-                type="number"
-                value={minPurchaseAmount}
-                onChange={(e) => onMinPurchaseAmountChange(e.target.value)}
-                InputProps={{
-                  endAdornment: <Typography variant="body2" sx={{ color: '#666' }}>€</Typography>
-                }}
-                sx={{ 
-                  width: 200,
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: 1,
-                    fontSize: '14px',
-                  }
-                }}
-              />
-            </Box>
-          )}
         </Box>
 
-        {/* Messages informatifs */}
-        {allConditions && (
-          <Box sx={{ mb: 3, p: 2, bgcolor: '#fff3e0', borderRadius: 1, border: '1px solid #ffcc02' }}>
-            <Typography variant="body2" sx={{ color: '#e65100' }}>
-              Les mêmes conditions s'appliquent à tous les gains.
-            </Typography>
-          </Box>
-        )}
+        {/* Tableau des conditions par gain */}
+        <Box sx={{ mb: 2 }}>
+          <Typography variant="h6" sx={{ fontWeight: 600, color: '#000', mb: 1 }}>
+            Conditions par gain
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            Personnalisez les conditions pour chaque gain individuellement ou utilisez la condition globale ci-dessus.
+          </Typography>
+        </Box>
 
-        {minPurchase && (
-          <Box sx={{ mb: 3, p: 2, bgcolor: '#e8f5e8', borderRadius: 1, border: '1px solid #4caf50' }}>
-            <Typography variant="body2" sx={{ color: '#2e7d32' }}>
-              Un achat minimum de {minPurchaseAmount || 0}€ est requis pour récupérer les gains.
-            </Typography>
-          </Box>
-        )}
-
-        {/* Tableau des conditions */}
         <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid #e5e7eb', borderRadius: 1 }}>
           <Table>
             <TableHead>
               <TableRow sx={{ bgcolor: '#f8fafc' }}>
                 <TableCell sx={{ fontWeight: 600, color: '#374151' }}>Gain</TableCell>
-                <TableCell sx={{ fontWeight: 600, color: '#374151' }}>Condition</TableCell>
+                <TableCell sx={{ fontWeight: 600, color: '#374151' }}>Condition appliquée</TableCell>
                 <TableCell sx={{ fontWeight: 600, color: '#374151' }}>Action</TableCell>
               </TableRow>
             </TableHead>
@@ -251,8 +259,9 @@ export const ConditionsSection: React.FC<ConditionsSectionProps> = ({
                       px: 2,
                       py: 0.5,
                       borderRadius: 1,
-                      bgcolor: field.value === "Aucune" ? '#f3f4f6' : '#e8f5e8',
-                      color: field.value === "Aucune" ? '#6b7280' : '#2e7d32',
+                      bgcolor: field.value === "Aucune" ? '#f3f4f6' : '#fff8f0',
+                      color: field.value === "Aucune" ? '#6b7280' : '#ea580c',
+                      border: field.value === "Aucune" ? '1px solid #d1d5db' : '1px solid #fed7aa',
                       display: 'inline-block',
                       fontSize: '13px',
                       fontWeight: 500
@@ -261,23 +270,43 @@ export const ConditionsSection: React.FC<ConditionsSectionProps> = ({
                     </Box>
                   </TableCell>
                   <TableCell>
-                    <Button
-                      variant="text"
-                      startIcon={<EditIcon />}
-                      size="small"
-                      onClick={onEditCondition}
-                      sx={{
-                        color: '#4285F4',
-                        textTransform: 'none',
-                        fontWeight: 500,
-                        fontSize: '14px',
-                        '&:hover': {
-                          bgcolor: '#f8fafc'
-                        }
-                      }}
-                    >
-                      Modifier
-                    </Button>
+                    {field.value !== "Aucune" ? (
+                      <Button
+                        variant="text"
+                        startIcon={<EditIcon />}
+                        size="small"
+                        onClick={onEditCondition}
+                        sx={{
+                          color: '#4285F4',
+                          textTransform: 'none',
+                          fontWeight: 500,
+                          fontSize: '14px',
+                          '&:hover': {
+                            bgcolor: '#f8fafc'
+                          }
+                        }}
+                      >
+                        Modifier
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="text"
+                        startIcon={<AddIcon />}
+                        size="small"
+                        onClick={onEditCondition}
+                        sx={{
+                          color: '#4285F4',
+                          textTransform: 'none',
+                          fontWeight: 500,
+                          fontSize: '14px',
+                          '&:hover': {
+                            bgcolor: '#f8fafc'
+                          }
+                        }}
+                      >
+                        Ajouter une condition
+                      </Button>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}
